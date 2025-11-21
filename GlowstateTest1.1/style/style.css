@@ -1,54 +1,889 @@
-html, body {
+/* ========================================
+   GLOWSTATE AUDIO LAB - SYNTHWAVE AESTHETICS
+   ======================================== */
+
+:root {
+    /* Color Palette - Neon Synthwave */
+    --neon-cyan: #00f3ff;
+    --neon-pink: #ff006e;
+    --neon-purple: #b537f2;
+    --neon-orange: #ff7d00;
+    --electric-blue: #0066ff;
+
+    /* Background Colors */
+    --bg-dark: #0a0a0f;
+    --bg-card: rgba(20, 20, 35, 0.6);
+    --bg-elevated: rgba(30, 30, 50, 0.8);
+
+    /* Text Colors */
+    --text-primary: #ffffff;
+    --text-secondary: #b8c5db;
+    --text-muted: #6b7a94;
+
+    /* Glassmorphism */
+    --glass-bg: rgba(255, 255, 255, 0.05);
+    --glass-border: rgba(255, 255, 255, 0.1);
+
+    /* Shadows & Glows */
+    --glow-cyan: 0 0 20px rgba(0, 243, 255, 0.4), 0 0 40px rgba(0, 243, 255, 0.2);
+    --glow-pink: 0 0 20px rgba(255, 0, 110, 0.4), 0 0 40px rgba(255, 0, 110, 0.2);
+    --glow-purple: 0 0 20px rgba(181, 55, 242, 0.4), 0 0 40px rgba(181, 55, 242, 0.2);
+
+    /* Typography */
+    --font-display: 'Orbitron', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+
+    /* Spacing */
+    --spacing-xs: 0.5rem;
+    --spacing-sm: 1rem;
+    --spacing-md: 1.5rem;
+    --spacing-lg: 2rem;
+    --spacing-xl: 3rem;
+
+    /* Border Radius */
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 16px;
+    --radius-xl: 24px;
+}
+
+/* ========================================
+   GLOBAL RESET & BASE STYLES
+   ======================================== */
+
+* {
     margin: 0;
     padding: 0;
-}
-#rnbo-root {
-    height: 100vh;
-    width: 100vw;
-}
-#background {
-    position: absolute;
-    z-index: -1;
+    box-sizing: border-box;
 }
 
-h2, em {
+html, body {
     width: 100%;
+    min-height: 100vh;
+    overflow-x: hidden;
+    font-family: var(--font-mono);
+    background: var(--bg-dark);
+    color: var(--text-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
+
+body {
+    position: relative;
+}
+
+/* ========================================
+   ANIMATED BACKGROUND
+   ======================================== */
+
+.bg-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    overflow: hidden;
+    background: radial-gradient(ellipse at bottom, #1a0a2e 0%, #0a0a0f 100%);
+}
+
+.gradient-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.3;
+    animation: float 20s ease-in-out infinite;
+}
+
+.orb-1 {
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, var(--neon-cyan), transparent);
+    top: -150px;
+    left: -150px;
+    animation-delay: 0s;
+}
+
+.orb-2 {
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, var(--neon-purple), transparent);
+    bottom: -100px;
+    right: -100px;
+    animation-delay: 7s;
+    animation-duration: 25s;
+}
+
+.orb-3 {
+    width: 350px;
+    height: 350px;
+    background: radial-gradient(circle, var(--neon-pink), transparent);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    animation-delay: 14s;
+    animation-duration: 30s;
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translate(0, 0) scale(1);
+    }
+    33% {
+        transform: translate(50px, -50px) scale(1.1);
+    }
+    66% {
+        transform: translate(-50px, 50px) scale(0.9);
+    }
+}
+
+.noise-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+/* ========================================
+   MAIN CONTAINER
+   ======================================== */
 
 #rnbo-root {
-    margin: auto;
-    max-width: 540px;
+    position: relative;
+    z-index: 1;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: var(--spacing-md);
+    animation: fadeIn 1s ease-out;
 }
 
-#rnbo-clickable-keyboard {
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ========================================
+   HEADER
+   ======================================== */
+
+.main-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-sm) var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    animation: slideDown 0.8s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.logo {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 900;
+    letter-spacing: 0.1em;
+    color: var(--text-primary);
+}
+
+.logo-glow {
+    color: var(--neon-cyan);
+    text-shadow: var(--glow-cyan);
+    animation: pulse 3s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        text-shadow: 0 0 20px rgba(0, 243, 255, 0.4), 0 0 40px rgba(0, 243, 255, 0.2);
+    }
+    50% {
+        text-shadow: 0 0 30px rgba(0, 243, 255, 0.6), 0 0 60px rgba(0, 243, 255, 0.3), 0 0 80px rgba(0, 243, 255, 0.2);
+    }
+}
+
+.header-info {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
+.patcher-name {
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: rgba(0, 243, 255, 0.1);
+    border: 1px solid var(--neon-cyan);
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+}
+
+.pulse-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--neon-cyan);
+    border-radius: 50%;
+    box-shadow: var(--glow-cyan);
+    animation: pulseGlow 2s ease-in-out infinite;
+}
+
+@keyframes pulseGlow {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.5;
+        transform: scale(1.2);
+    }
+}
+
+.status-text {
+    color: var(--neon-cyan);
+}
+
+/* ========================================
+   EQUIPMENT PANEL - COMPACT LAYOUT
+   ======================================== */
+
+.equipment-panel {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    border: 2px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    padding: var(--spacing-md);
+    animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.control-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+}
+
+.control-row:last-child {
+    margin-bottom: 0;
+}
+
+.control-group {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: var(--radius-sm);
+    padding: var(--spacing-sm);
+}
+
+.group-label {
+    font-family: var(--font-display);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    color: var(--neon-cyan);
+    text-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
+    margin-bottom: var(--spacing-xs);
+    text-transform: uppercase;
+}
+
+.effects-group {
+    grid-column: 1 / -1;
+}
+
+.empty-state {
+    display: block;
+    padding: var(--spacing-md);
+    text-align: center;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+/* ========================================
+   MIDI KEYBOARD
+   ======================================== */
+
+.keyboard-container {
     display: flex;
     flex-wrap: wrap;
+    gap: var(--spacing-sm);
 }
 
 #rnbo-clickable-keyboard > div {
-    margin: 2px;
-    border: solid black 1px;
-    min-height: 50px;
-    flex-grow: 1;
+    flex: 1 1 calc(25% - var(--spacing-sm));
+    min-width: 80px;
+    min-height: 80px;
     display: flex;
-    justify-content: center;
     align-items: center;
+    justify-content: center;
+    background: var(--bg-elevated);
+    border: 2px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--neon-cyan);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
 }
 
+#rnbo-clickable-keyboard > div::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--neon-cyan), transparent);
+    opacity: 0;
+    transform: translate(-50%, -50%);
+    transition: all 0.4s ease;
+}
+
+#rnbo-clickable-keyboard > div:hover {
+    border-color: var(--neon-cyan);
+    box-shadow: 0 0 20px rgba(0, 243, 255, 0.3), inset 0 0 20px rgba(0, 243, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+#rnbo-clickable-keyboard > div:active,
 #rnbo-clickable-keyboard > div.clicked {
-    background: #222222;
-    color: #dddddd;
+    background: var(--neon-cyan);
+    color: var(--bg-dark);
+    box-shadow: var(--glow-cyan), inset 0 0 30px rgba(0, 243, 255, 0.5);
+    transform: scale(0.95);
 }
 
-#rnbo-parameter-sliders {
+#rnbo-clickable-keyboard > div.clicked::before {
+    width: 200%;
+    height: 200%;
+    opacity: 0.3;
+}
+
+/* ========================================
+   PARAMETERS / SLIDERS
+   ======================================== */
+
+.parameters-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-sm);
+}
+
+.parameters-container > div {
     display: flex;
     flex-direction: column;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-xs);
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: var(--radius-sm);
+    transition: background 0.3s ease;
 }
 
-#rnbo-parameter-sliders > div {
-    display: flex;
+.parameters-container > div:hover {
+    background: rgba(255, 255, 255, 0.05);
 }
 
-#rnbo-parameter-sliders > div > input:first-of-type {
+.param-label {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    text-align: center;
+}
+
+.param-slider {
     flex-grow: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    outline: none;
+    position: relative;
+    cursor: pointer;
+}
+
+.param-slider::-webkit-slider-track {
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+.param-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    background: var(--neon-cyan);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(0, 243, 255, 0.5), 0 0 20px rgba(0, 243, 255, 0.3);
+    transition: all 0.2s ease;
+}
+
+.param-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+    box-shadow: 0 0 15px rgba(0, 243, 255, 0.7), 0 0 30px rgba(0, 243, 255, 0.4);
+}
+
+.param-slider::-webkit-slider-thumb:active {
+    transform: scale(1.1);
+}
+
+.param-slider::-moz-range-track {
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+.param-slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    background: var(--neon-cyan);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(0, 243, 255, 0.5), 0 0 20px rgba(0, 243, 255, 0.3);
+    transition: all 0.2s ease;
+}
+
+.param-slider::-moz-range-thumb:hover {
+    transform: scale(1.2);
+    box-shadow: 0 0 15px rgba(0, 243, 255, 0.7), 0 0 30px rgba(0, 243, 255, 0.4);
+}
+
+.parameters-container input[type="text"] {
+    width: 100%;
+    padding: 0.35rem;
+    background: var(--bg-elevated);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    text-align: center;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.parameters-container input[type="text"]:focus {
+    border-color: var(--neon-cyan);
+    box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
+}
+
+/* ========================================
+   DUAL COLUMN LAYOUT
+   ======================================== */
+
+.dual-column {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+}
+
+.half-width {
+    margin-bottom: 0;
+}
+
+/* ========================================
+   INPORTS FORM
+   ======================================== */
+
+.inport-form {
+    margin-top: var(--spacing-sm);
+}
+
+.inport-input {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.custom-select,
+.text-input {
+    padding: 0.75rem 1rem;
+    background: var(--bg-elevated);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.custom-select {
+    flex: 1;
+    cursor: pointer;
+}
+
+.text-input {
+    flex: 2;
+}
+
+.custom-select:hover,
+.text-input:hover {
+    border-color: rgba(0, 243, 255, 0.3);
+}
+
+.custom-select:focus,
+.text-input:focus {
+    border-color: var(--neon-cyan);
+    box-shadow: 0 0 15px rgba(0, 243, 255, 0.2);
+}
+
+.glow-button {
+    padding: 0.75rem 1.5rem;
+    background: var(--neon-cyan);
+    border: none;
+    border-radius: var(--radius-md);
+    color: var(--bg-dark);
+    font-family: var(--font-display);
+    font-size: 0.875rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 15px rgba(0, 243, 255, 0.4);
+}
+
+.glow-button:hover {
+    background: var(--neon-purple);
+    box-shadow: var(--glow-purple);
+    transform: translateY(-2px);
+}
+
+.glow-button:active {
+    transform: translateY(0) scale(0.98);
+}
+
+/* ========================================
+   CONSOLE OUTPUT
+   ======================================== */
+
+.console-output {
+    padding: var(--spacing-md);
+    background: var(--bg-dark);
+    border: 1px solid rgba(0, 243, 255, 0.2);
+    border-radius: var(--radius-md);
+    min-height: 100px;
+}
+
+.console-text {
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    color: var(--neon-cyan);
+    margin-bottom: var(--spacing-sm);
+    word-break: break-all;
+}
+
+.console-hint {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+/* ========================================
+   PRESETS
+   ======================================== */
+
+.preset-select {
+    width: 100%;
+    max-width: 400px;
+    padding: 1rem 1.5rem;
+    margin-top: var(--spacing-sm);
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+
+@media (max-width: 768px) {
+    #rnbo-root {
+        padding: var(--spacing-sm);
+    }
+
+    .main-header {
+        flex-direction: column;
+        gap: var(--spacing-md);
+        text-align: center;
+    }
+
+    .logo {
+        font-size: 1.5rem;
+    }
+
+    #rnbo-clickable-keyboard > div {
+        flex: 1 1 calc(50% - var(--spacing-sm));
+        min-width: 60px;
+        min-height: 60px;
+        font-size: 1.25rem;
+    }
+
+    .dual-column {
+        grid-template-columns: 1fr;
+    }
+
+    .inport-input {
+        flex-direction: column;
+    }
+
+    .param-label {
+        min-width: 100px;
+        font-size: 0.75rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .control-section {
+        padding: var(--spacing-md);
+    }
+
+    .section-title {
+        font-size: 0.875rem;
+    }
+
+    #rnbo-clickable-keyboard > div {
+        min-height: 50px;
+        font-size: 1rem;
+    }
+}
+
+/* ========================================
+   SCROLLBAR STYLING
+   ======================================== */
+
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-dark);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--neon-cyan);
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--neon-purple);
+}
+
+/* ========================================
+   SELECTION STYLING
+   ======================================== */
+
+::selection {
+    background: var(--neon-cyan);
+    color: var(--bg-dark);
+}
+
+::-moz-selection {
+    background: var(--neon-cyan);
+    color: var(--bg-dark);
+}
+
+/* ========================================
+   TRANSPORT CONTROLS
+   ======================================== */
+
+.transport-container {
+    display: flex;
+    gap: var(--spacing-xs);
+}
+
+.transport-button {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    background: var(--bg-elevated);
+    border: 2px solid var(--glass-border);
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    font-family: var(--font-display);
+    font-size: 0.875rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.transport-button::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0, 243, 255, 0.3), transparent);
+    transform: translate(-50%, -50%);
+    transition: all 0.5s ease;
+}
+
+.transport-button:hover {
+    border-color: var(--neon-cyan);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(0, 243, 255, 0.3);
+}
+
+.transport-button:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.transport-button.active {
+    background: var(--neon-cyan);
+    border-color: var(--neon-cyan);
+    color: var(--bg-dark);
+    box-shadow: var(--glow-cyan);
+}
+
+.transport-button:active {
+    transform: translateY(0) scale(0.98);
+}
+
+/* ========================================
+   DRUM LOOP BUTTONS
+   ======================================== */
+
+.drum-loop-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-xs);
+}
+
+.loop-button {
+    padding: 0.75rem 0.5rem;
+    background: var(--bg-elevated);
+    border: 2px solid var(--glass-border);
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    font-family: var(--font-display);
+    font-size: 0.875rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.loop-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--neon-purple), var(--neon-pink));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.loop-button:hover {
+    border-color: var(--neon-purple);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(181, 55, 242, 0.3);
+}
+
+.loop-button:hover::before {
+    opacity: 0.1;
+}
+
+.loop-button.active {
+    background: linear-gradient(135deg, var(--neon-purple), var(--neon-pink));
+    border-color: var(--neon-purple);
+    color: var(--bg-dark);
+    box-shadow: var(--glow-purple);
+}
+
+.loop-button.active::before {
+    opacity: 0;
+}
+
+.loop-button:active {
+    transform: translateY(0) scale(0.98);
+}
+
+/* ========================================
+   RESPONSIVE - TRANSPORT & LOOPS
+   ======================================== */
+
+@media (max-width: 768px) {
+    .transport-container {
+        flex-direction: column;
+    }
+
+    .transport-button {
+        max-width: 100%;
+    }
+
+    .drum-loop-container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .transport-button {
+        padding: 1rem 2rem;
+        font-size: 1rem;
+    }
+
+    .loop-button {
+        padding: 1rem 0.5rem;
+        font-size: 0.875rem;
+    }
 }

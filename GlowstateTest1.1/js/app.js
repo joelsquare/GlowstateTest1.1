@@ -1,5 +1,5 @@
 async function setup() {
-    const patchExportURL = "export/patch.export.json";
+    const patchExportURL = "export/GS1.4.export.json";
 
     // Create AudioContext
     const WAContext = window.AudioContext || window.webkitAudioContext;
@@ -74,8 +74,14 @@ async function setup() {
     // (Optional) Extract the name and rnbo version of the patcher from the description
     document.getElementById("patcher-title").innerText = (patcher.desc.meta.filename || "Unnamed Patcher") + " (v" + patcher.desc.meta.rnboversion + ")";
 
-    // (Optional) Automatically create sliders for the device parameters
-    makeSliders(device);
+    // Create custom transport controls (Play/Stop)
+    makeTransportControls(device, context);
+
+    // Create drum loop selector buttons
+    makeDrumLoopButtons(device, context);
+
+    // Create custom parameter controls (only cutoff, res, verb_send)
+    makeCustomSliders(device);
 
     // (Optional) Create a form to send messages to RNBO inputs
     makeInportForm(device);
@@ -86,8 +92,8 @@ async function setup() {
     // (Optional) Load presets, if any
     loadPresets(device, patcher);
 
-    // (Optional) Connect MIDI inputs
-    makeMIDIKeyboard(device);
+    // Connect USB MIDI devices
+    connectUSBMIDI(device);
 
     document.body.onclick = () => {
         context.resume();
@@ -111,6 +117,186 @@ function loadRNBOScript(version) {
             reject(new Error("Failed to load rnbo.js v" + version));
         };
         document.body.append(el);
+    });
+}
+
+function makeTransportControls(device, context) {
+    const transportDiv = document.getElementById("transport-controls");
+    if (!transportDiv) return;
+
+    const loopSelectParam = device.parameters.find(p => p.id === "loop_select");
+    if (!loopSelectParam) return;
+
+    const playButton = document.createElement("button");
+    playButton.textContent = "PLAY";
+    playButton.className = "transport-button play-button";
+    playButton.id = "play-button";
+
+    const stopButton = document.createElement("button");
+    stopButton.textContent = "STOP";
+    stopButton.className = "transport-button stop-button";
+    stopButton.id = "stop-button";
+
+    let lastLoopValue = 1;
+
+    playButton.addEventListener("click", async () => {
+        await context.resume();
+        loopSelectParam.value = lastLoopValue;
+        playButton.classList.add("active");
+        stopButton.classList.remove("active");
+    });
+
+    stopButton.addEventListener("click", () => {
+        loopSelectParam.value = 0;
+        stopButton.classList.add("active");
+        playButton.classList.remove("active");
+    });
+
+    stopButton.classList.add("active");
+
+    transportDiv.appendChild(playButton);
+    transportDiv.appendChild(stopButton);
+
+    window.updateLastLoopValue = (value) => {
+        if (value > 0) {
+            lastLoopValue = value;
+        }
+    };
+}
+
+function makeDrumLoopButtons(device, context) {
+    const loopDiv = document.getElementById("drum-loop-buttons");
+    if (!loopDiv) return;
+
+    const loopSelectParam = device.parameters.find(p => p.id === "loop_select");
+    if (!loopSelectParam) return;
+
+    const drumLoops = [
+        { name: "LOOP 1", value: 1 },
+        { name: "LOOP 2", value: 2 },
+        { name: "LOOP 3", value: 3 },
+        { name: "LOOP 4", value: 4 }
+    ];
+
+    drumLoops.forEach((loop, index) => {
+        const button = document.createElement("button");
+        button.textContent = loop.name;
+        button.className = "loop-button";
+        button.dataset.loopValue = loop.value;
+
+        if (index === 0) {
+            button.classList.add("active");
+        }
+
+        button.addEventListener("click", async () => {
+            await context.resume();
+            loopSelectParam.value = loop.value;
+
+            document.querySelectorAll(".loop-button").forEach(btn => {
+                btn.classList.remove("active");
+            });
+            button.classList.add("active");
+
+            if (window.updateLastLoopValue) {
+                window.updateLastLoopValue(loop.value);
+            }
+
+            const playButton = document.getElementById("play-button");
+            const stopButton = document.getElementById("stop-button");
+            if (playButton && stopButton) {
+                playButton.classList.add("active");
+                stopButton.classList.remove("active");
+            }
+        });
+
+        loopDiv.appendChild(button);
+    });
+}
+
+function makeCustomSliders(device) {
+    let pdiv = document.getElementById("rnbo-parameter-sliders");
+    let noParamLabel = document.getElementById("no-param-label");
+    if (noParamLabel && device.numParameters > 0) pdiv.removeChild(noParamLabel);
+
+    let isDraggingSlider = false;
+    let uiElements = {};
+
+    const parametersToShow = ["cut_off", "res", "verb_send"];
+
+    device.parameters.forEach(param => {
+        if (!parametersToShow.includes(param.id)) return;
+
+        let label = document.createElement("label");
+        let slider = document.createElement("input");
+        let text = document.createElement("input");
+        let sliderContainer = document.createElement("div");
+        sliderContainer.appendChild(label);
+        sliderContainer.appendChild(slider);
+        sliderContainer.appendChild(text);
+
+        const displayNames = {
+            "cut_off": "CUTOFF",
+            "res": "RESONANCE",
+            "verb_send": "REVERB"
+        };
+
+        label.setAttribute("name", param.name);
+        label.setAttribute("for", param.name);
+        label.setAttribute("class", "param-label");
+        label.textContent = `${displayNames[param.id] || param.name}: `;
+
+        slider.setAttribute("type", "range");
+        slider.setAttribute("class", "param-slider");
+        slider.setAttribute("id", param.id);
+        slider.setAttribute("name", param.name);
+        slider.setAttribute("min", param.min);
+        slider.setAttribute("max", param.max);
+        if (param.steps > 1) {
+            slider.setAttribute("step", (param.max - param.min) / (param.steps - 1));
+        } else {
+            slider.setAttribute("step", (param.max - param.min) / 1000.0);
+        }
+        slider.setAttribute("value", param.value);
+
+        text.setAttribute("value", param.value.toFixed(1));
+        text.setAttribute("type", "text");
+
+        slider.addEventListener("pointerdown", () => {
+            isDraggingSlider = true;
+        });
+        slider.addEventListener("pointerup", () => {
+            isDraggingSlider = false;
+            slider.value = param.value;
+            text.value = param.value.toFixed(1);
+        });
+        slider.addEventListener("input", () => {
+            let value = Number.parseFloat(slider.value);
+            param.value = value;
+        });
+
+        text.addEventListener("keydown", (ev) => {
+            if (ev.key === "Enter") {
+                let newValue = Number.parseFloat(text.value);
+                if (isNaN(newValue)) {
+                    text.value = param.value;
+                } else {
+                    newValue = Math.min(newValue, param.max);
+                    newValue = Math.max(newValue, param.min);
+                    text.value = newValue;
+                    param.value = newValue;
+                }
+            }
+        });
+
+        uiElements[param.id] = { slider, text };
+        pdiv.appendChild(sliderContainer);
+    });
+
+    device.parameterChangeEvent.subscribe(param => {
+        if (!uiElements[param.id]) return;
+        if (!isDraggingSlider)
+            uiElements[param.id].slider.value = param.value;
+        uiElements[param.id].text.value = param.value.toFixed(1);
     });
 }
 
@@ -285,55 +471,63 @@ function loadPresets(device, patcher) {
     presetSelect.onchange = () => device.setPreset(presets[presetSelect.value].preset);
 }
 
-function makeMIDIKeyboard(device) {
-    let mdiv = document.getElementById("rnbo-clickable-keyboard");
-    if (device.numMIDIInputPorts === 0) return;
+function connectUSBMIDI(device) {
+    if (navigator.requestMIDIAccess) {
+        navigator.requestMIDIAccess()
+            .then(midiAccess => {
+                console.log("MIDI Access granted");
 
-    mdiv.removeChild(document.getElementById("no-midi-label"));
+                const inputs = midiAccess.inputs;
+                let midiInputCount = 0;
 
-    const midiNotes = [49, 52, 56, 63];
-    midiNotes.forEach(note => {
-        const key = document.createElement("div");
-        const label = document.createElement("p");
-        label.textContent = note;
-        key.appendChild(label);
-        key.addEventListener("pointerdown", () => {
-            let midiChannel = 0;
+                inputs.forEach(input => {
+                    midiInputCount++;
+                    console.log(`MIDI Input: ${input.name}`);
 
-            // Format a MIDI message paylaod, this constructs a MIDI on event
-            let noteOnMessage = [
-                144 + midiChannel, // Code for a note on: 10010000 & midi channel (0-15)
-                note, // MIDI Note
-                100 // MIDI Velocity
-            ];
-        
-            let noteOffMessage = [
-                128 + midiChannel, // Code for a note off: 10000000 & midi channel (0-15)
-                note, // MIDI Note
-                0 // MIDI Velocity
-            ];
-        
-            // Including rnbo.min.js (or the unminified rnbo.js) will add the RNBO object
-            // to the global namespace. This includes the TimeNow constant as well as
-            // the MIDIEvent constructor.
-            let midiPort = 0;
-            let noteDurationMs = 250;
-        
-            // When scheduling an event to occur in the future, use the current audio context time
-            // multiplied by 1000 (converting seconds to milliseconds) for now.
-            let noteOnEvent = new RNBO.MIDIEvent(device.context.currentTime * 1000, midiPort, noteOnMessage);
-            let noteOffEvent = new RNBO.MIDIEvent(device.context.currentTime * 1000 + noteDurationMs, midiPort, noteOffMessage);
-        
-            device.scheduleEvent(noteOnEvent);
-            device.scheduleEvent(noteOffEvent);
+                    input.onmidimessage = (message) => {
+                        const data = message.data;
+                        const midiPort = 0;
 
-            key.classList.add("clicked");
-        });
+                        const midiEvent = new RNBO.MIDIEvent(
+                            device.context.currentTime * 1000,
+                            midiPort,
+                            data
+                        );
 
-        key.addEventListener("pointerup", () => key.classList.remove("clicked"));
+                        device.scheduleEvent(midiEvent);
+                    };
+                });
 
-        mdiv.appendChild(key);
-    });
+                if (midiInputCount > 0) {
+                    console.log(`Connected ${midiInputCount} MIDI input device(s)`);
+                } else {
+                    console.log("No MIDI input devices found. Connect a USB MIDI device.");
+                }
+
+                midiAccess.onstatechange = (event) => {
+                    console.log(`MIDI State Change: ${event.port.name} - ${event.port.state}`);
+                    if (event.port.state === 'connected' && event.port.type === 'input') {
+                        event.port.onmidimessage = (message) => {
+                            const data = message.data;
+                            const midiPort = 0;
+
+                            const midiEvent = new RNBO.MIDIEvent(
+                                device.context.currentTime * 1000,
+                                midiPort,
+                                data
+                            );
+
+                            device.scheduleEvent(midiEvent);
+                        };
+                    }
+                };
+            })
+            .catch(err => {
+                console.error("MIDI Access denied or not supported:", err);
+            });
+    } else {
+        console.warn("Web MIDI API not supported in this browser");
+    }
 }
 
 setup();
