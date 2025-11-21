@@ -189,10 +189,16 @@ function makeTransportControls(device, context) {
     };
 
     playButton.addEventListener("click", handlePlay);
-    playButton.addEventListener("touchstart", handlePlay);
+    playButton.addEventListener("touchend", (e) => {
+        e.preventDefault();
+        handlePlay();
+    });
 
     stopButton.addEventListener("click", handleStop);
-    stopButton.addEventListener("touchstart", handleStop);
+    stopButton.addEventListener("touchend", (e) => {
+        e.preventDefault();
+        handleStop();
+    });
 
     stopButton.classList.add("active");
 
@@ -265,7 +271,10 @@ function makeDrumLoopButtons(device, context) {
         };
 
         button.addEventListener("click", handleLoopSelect);
-        button.addEventListener("touchstart", handleLoopSelect);
+        button.addEventListener("touchend", (e) => {
+            e.preventDefault();
+            handleLoopSelect();
+        });
 
         loopDiv.appendChild(button);
     });
