@@ -7,7 +7,9 @@ async function setup() {
 
     // Create gain node and connect it to audio output
     const outputNode = context.createGain();
+    outputNode.gain.value = 1.0;
     outputNode.connect(context.destination);
+    console.log("Audio output node created with gain:", outputNode.gain.value);
     
     // Fetch the exported patcher
     let response, patcher;
@@ -65,8 +67,13 @@ async function setup() {
     }
 
     // (Optional) Load the samples
-    if (dependencies.length)
+    if (dependencies.length) {
+        console.log("Loading audio dependencies:", dependencies);
         await device.loadDataBufferDependencies(dependencies);
+        console.log("Audio dependencies loaded successfully");
+    } else {
+        console.warn("No audio dependencies found!");
+    }
 
     // Connect the device to the web audio graph
     device.node.connect(outputNode);
@@ -147,10 +154,19 @@ function makeTransportControls(device, context) {
     let lastLoopValue = 1;
 
     const handlePlay = async () => {
-        await context.resume();
-        loopSelectParam.value = lastLoopValue;
-        playButton.classList.add("active");
-        stopButton.classList.remove("active");
+        try {
+            console.log("Play button pressed, context state:", context.state);
+            await context.resume();
+            console.log("Context resumed, new state:", context.state);
+
+            loopSelectParam.value = lastLoopValue;
+            console.log("Loop select set to:", lastLoopValue);
+
+            playButton.classList.add("active");
+            stopButton.classList.remove("active");
+        } catch (err) {
+            console.error("Error in handlePlay:", err);
+        }
     };
 
     const handleStop = () => {
@@ -202,23 +218,31 @@ function makeDrumLoopButtons(device, context) {
         }
 
         const handleLoopSelect = async () => {
-            await context.resume();
-            loopSelectParam.value = loop.value;
+            try {
+                console.log(`Loop ${loop.value} button pressed, context state:`, context.state);
+                await context.resume();
+                console.log("Context resumed, new state:", context.state);
 
-            document.querySelectorAll(".loop-button").forEach(btn => {
-                btn.classList.remove("active");
-            });
-            button.classList.add("active");
+                loopSelectParam.value = loop.value;
+                console.log("Loop select parameter set to:", loop.value);
 
-            if (window.updateLastLoopValue) {
-                window.updateLastLoopValue(loop.value);
-            }
+                document.querySelectorAll(".loop-button").forEach(btn => {
+                    btn.classList.remove("active");
+                });
+                button.classList.add("active");
 
-            const playButton = document.getElementById("play-button");
-            const stopButton = document.getElementById("stop-button");
-            if (playButton && stopButton) {
-                playButton.classList.add("active");
-                stopButton.classList.remove("active");
+                if (window.updateLastLoopValue) {
+                    window.updateLastLoopValue(loop.value);
+                }
+
+                const playButton = document.getElementById("play-button");
+                const stopButton = document.getElementById("stop-button");
+                if (playButton && stopButton) {
+                    playButton.classList.add("active");
+                    stopButton.classList.remove("active");
+                }
+            } catch (err) {
+                console.error("Error in handleLoopSelect:", err);
             }
         };
 
