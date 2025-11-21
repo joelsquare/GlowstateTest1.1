@@ -95,9 +95,16 @@ async function setup() {
     // Connect USB MIDI devices
     connectUSBMIDI(device);
 
-    document.body.onclick = () => {
-        context.resume();
-    }
+    // Mobile-friendly audio context initialization
+    const startAudioContext = async () => {
+        if (context.state === 'suspended') {
+            await context.resume();
+        }
+    };
+
+    // Handle both click and touch events for mobile
+    document.body.addEventListener('click', startAudioContext);
+    document.body.addEventListener('touchstart', startAudioContext, { once: true });
 
     // Skip if you're not using guardrails.js
     if (typeof guardrails === "function")
@@ -139,18 +146,24 @@ function makeTransportControls(device, context) {
 
     let lastLoopValue = 1;
 
-    playButton.addEventListener("click", async () => {
+    const handlePlay = async () => {
         await context.resume();
         loopSelectParam.value = lastLoopValue;
         playButton.classList.add("active");
         stopButton.classList.remove("active");
-    });
+    };
 
-    stopButton.addEventListener("click", () => {
+    const handleStop = () => {
         loopSelectParam.value = 0;
         stopButton.classList.add("active");
         playButton.classList.remove("active");
-    });
+    };
+
+    playButton.addEventListener("click", handlePlay);
+    playButton.addEventListener("touchstart", handlePlay);
+
+    stopButton.addEventListener("click", handleStop);
+    stopButton.addEventListener("touchstart", handleStop);
 
     stopButton.classList.add("active");
 
@@ -188,7 +201,7 @@ function makeDrumLoopButtons(device, context) {
             button.classList.add("active");
         }
 
-        button.addEventListener("click", async () => {
+        const handleLoopSelect = async () => {
             await context.resume();
             loopSelectParam.value = loop.value;
 
@@ -207,7 +220,10 @@ function makeDrumLoopButtons(device, context) {
                 playButton.classList.add("active");
                 stopButton.classList.remove("active");
             }
-        });
+        };
+
+        button.addEventListener("click", handleLoopSelect);
+        button.addEventListener("touchstart", handleLoopSelect);
 
         loopDiv.appendChild(button);
     });

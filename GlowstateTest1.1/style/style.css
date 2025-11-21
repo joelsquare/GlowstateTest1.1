@@ -66,6 +66,8 @@ html, body {
     color: var(--text-primary);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
 body {
@@ -863,27 +865,63 @@ body {
    ======================================== */
 
 @media (max-width: 768px) {
-    .transport-container {
-        flex-direction: column;
+    #rnbo-root {
+        padding: var(--spacing-xs);
     }
 
-    .transport-button {
-        max-width: 100%;
+    .main-header {
+        flex-direction: column;
+        gap: var(--spacing-xs);
+        padding: var(--spacing-xs) var(--spacing-sm);
+    }
+
+    .logo {
+        font-size: 1.25rem;
+    }
+
+    .equipment-panel {
+        padding: var(--spacing-sm);
+    }
+
+    .control-row {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-sm);
+    }
+
+    .transport-button,
+    .loop-button {
+        padding: 1rem;
+        font-size: 0.875rem;
+        min-height: 48px;
+        touch-action: manipulation;
     }
 
     .drum-loop-container {
         grid-template-columns: repeat(2, 1fr);
     }
+
+    .parameters-container {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-sm);
+    }
+
+    .param-label {
+        font-size: 0.75rem;
+    }
 }
 
 @media (max-width: 480px) {
     .transport-button {
-        padding: 1rem 2rem;
-        font-size: 1rem;
+        padding: 0.875rem;
+        font-size: 0.8rem;
     }
 
     .loop-button {
-        padding: 1rem 0.5rem;
-        font-size: 0.875rem;
+        padding: 0.875rem 0.5rem;
+        font-size: 0.8rem;
+    }
+
+    .group-label {
+        font-size: 0.65rem;
     }
 }
