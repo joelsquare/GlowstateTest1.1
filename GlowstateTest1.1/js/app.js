@@ -159,8 +159,13 @@ function makeTransportControls(device, context) {
             await context.resume();
             console.log("Context resumed, new state:", context.state);
 
+            // Start the transport
+            device.node.context.transport.running = true;
+            console.log("Transport running set to:", device.node.context.transport.running);
+
             loopSelectParam.value = lastLoopValue;
             console.log("Loop select set to:", lastLoopValue);
+            console.log("Current loop_select parameter value:", loopSelectParam.value);
 
             playButton.classList.add("active");
             stopButton.classList.remove("active");
@@ -171,6 +176,8 @@ function makeTransportControls(device, context) {
 
     const handleStop = () => {
         loopSelectParam.value = 0;
+        device.node.context.transport.running = false;
+        console.log("Stop pressed, transport stopped, loop_select set to 0");
         stopButton.classList.add("active");
         playButton.classList.remove("active");
     };
@@ -223,8 +230,13 @@ function makeDrumLoopButtons(device, context) {
                 await context.resume();
                 console.log("Context resumed, new state:", context.state);
 
+                // Start the transport
+                device.node.context.transport.running = true;
+                console.log("Transport running set to:", device.node.context.transport.running);
+
                 loopSelectParam.value = loop.value;
                 console.log("Loop select parameter set to:", loop.value);
+                console.log("Current loop_select parameter value:", loopSelectParam.value);
 
                 document.querySelectorAll(".loop-button").forEach(btn => {
                     btn.classList.remove("active");

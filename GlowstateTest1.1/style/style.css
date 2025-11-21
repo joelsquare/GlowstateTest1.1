@@ -278,6 +278,15 @@ body {
     color: var(--neon-cyan);
 }
 
+.build-number {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    padding: 0.25rem 0.5rem;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: var(--radius-sm);
+}
+
 /* ========================================
    EQUIPMENT PANEL - COMPACT LAYOUT
    ======================================== */
