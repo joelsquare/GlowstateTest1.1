@@ -77,6 +77,12 @@ async function setup() {
 
     // Connect the device to the web audio graph
     device.node.connect(outputNode);
+    console.log("RNBO device connected to output node");
+    console.log("Device num output channels:", device.numOutputChannels);
+
+    // Set transport tempo
+    device.node.context.transport.tempo = 120;
+    console.log("Transport tempo set to:", device.node.context.transport.tempo);
 
     // (Optional) Extract the name and rnbo version of the patcher from the description
     document.getElementById("patcher-title").innerText = (patcher.desc.meta.filename || "Unnamed Patcher") + " (v" + patcher.desc.meta.rnboversion + ")";
