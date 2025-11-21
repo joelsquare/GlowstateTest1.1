@@ -73,8 +73,10 @@ async function setup() {
     // Connect the device to the web audio graph
     device.node.connect(outputNode);
 
-    // Set transport tempo
-    device.node.context.transport.tempo = 120;
+    // Set transport tempo (if transport exists)
+    if (device.node.context.transport) {
+        device.node.context.transport.tempo = 120;
+    }
 
     // (Optional) Extract the name and rnbo version of the patcher from the description
     document.getElementById("patcher-title").innerText = (patcher.desc.meta.filename || "Unnamed Patcher") + " (v" + patcher.desc.meta.rnboversion + ")";
@@ -154,7 +156,9 @@ function makeTransportControls(device, context) {
     const handlePlay = async (e) => {
         if (e) e.preventDefault();
         await context.resume();
-        device.node.context.transport.running = true;
+        if (device.node.context.transport) {
+            device.node.context.transport.running = true;
+        }
         loopSelectParam.value = lastLoopValue;
         playButton.classList.add("active");
         stopButton.classList.remove("active");
@@ -163,7 +167,9 @@ function makeTransportControls(device, context) {
     const handleStop = (e) => {
         if (e) e.preventDefault();
         loopSelectParam.value = 0;
-        device.node.context.transport.running = false;
+        if (device.node.context.transport) {
+            device.node.context.transport.running = false;
+        }
         stopButton.classList.add("active");
         playButton.classList.remove("active");
     };
@@ -213,7 +219,9 @@ function makeDrumLoopButtons(device, context) {
         const handleLoopSelect = async (e) => {
             if (e) e.preventDefault();
             await context.resume();
-            device.node.context.transport.running = true;
+            if (device.node.context.transport) {
+                device.node.context.transport.running = true;
+            }
             loopSelectParam.value = loop.value;
 
             document.querySelectorAll(".loop-button").forEach(btn => {
@@ -557,4 +565,7 @@ function connectUSBMIDI(device) {
     }
 }
 
-setup();
+setup().catch(err => {
+    alert("Error loading app: " + err.message);
+    console.error(err);
+});
