@@ -90,15 +90,6 @@ async function setup() {
     // Create custom parameter controls (only cutoff, res, verb_send)
     makeCustomSliders(device);
 
-    // (Optional) Create a form to send messages to RNBO inputs
-    makeInportForm(device);
-
-    // (Optional) Attach listeners to outports so you can log messages from the RNBO patcher
-    attachOutports(device);
-
-    // (Optional) Load presets, if any
-    loadPresets(device, patcher);
-
     // Connect USB MIDI devices
     connectUSBMIDI(device);
 
