@@ -9,7 +9,6 @@ async function setup() {
     const outputNode = context.createGain();
     outputNode.gain.value = 1.0;
     outputNode.connect(context.destination);
-    console.log("Audio output node created with gain:", outputNode.gain.value);
     
     // Fetch the exported patcher
     let response, patcher;
@@ -68,21 +67,14 @@ async function setup() {
 
     // (Optional) Load the samples
     if (dependencies.length) {
-        console.log("Loading audio dependencies:", dependencies);
         await device.loadDataBufferDependencies(dependencies);
-        console.log("Audio dependencies loaded successfully");
-    } else {
-        console.warn("No audio dependencies found!");
     }
 
     // Connect the device to the web audio graph
     device.node.connect(outputNode);
-    console.log("RNBO device connected to output node");
-    console.log("Device num output channels:", device.numOutputChannels);
 
     // Set transport tempo
     device.node.context.transport.tempo = 120;
-    console.log("Transport tempo set to:", device.node.context.transport.tempo);
 
     // (Optional) Extract the name and rnbo version of the patcher from the description
     document.getElementById("patcher-title").innerText = (patcher.desc.meta.filename || "Unnamed Patcher") + " (v" + patcher.desc.meta.rnboversion + ")";
@@ -159,46 +151,28 @@ function makeTransportControls(device, context) {
 
     let lastLoopValue = 1;
 
-    const handlePlay = async () => {
-        try {
-            console.log("Play button pressed, context state:", context.state);
-            await context.resume();
-            console.log("Context resumed, new state:", context.state);
-
-            // Start the transport
-            device.node.context.transport.running = true;
-            console.log("Transport running set to:", device.node.context.transport.running);
-
-            loopSelectParam.value = lastLoopValue;
-            console.log("Loop select set to:", lastLoopValue);
-            console.log("Current loop_select parameter value:", loopSelectParam.value);
-
-            playButton.classList.add("active");
-            stopButton.classList.remove("active");
-        } catch (err) {
-            console.error("Error in handlePlay:", err);
-        }
+    const handlePlay = async (e) => {
+        if (e) e.preventDefault();
+        await context.resume();
+        device.node.context.transport.running = true;
+        loopSelectParam.value = lastLoopValue;
+        playButton.classList.add("active");
+        stopButton.classList.remove("active");
     };
 
-    const handleStop = () => {
+    const handleStop = (e) => {
+        if (e) e.preventDefault();
         loopSelectParam.value = 0;
         device.node.context.transport.running = false;
-        console.log("Stop pressed, transport stopped, loop_select set to 0");
         stopButton.classList.add("active");
         playButton.classList.remove("active");
     };
 
     playButton.addEventListener("click", handlePlay);
-    playButton.addEventListener("touchend", (e) => {
-        e.preventDefault();
-        handlePlay();
-    });
+    playButton.addEventListener("touchstart", handlePlay, { passive: false });
 
     stopButton.addEventListener("click", handleStop);
-    stopButton.addEventListener("touchend", (e) => {
-        e.preventDefault();
-        handleStop();
-    });
+    stopButton.addEventListener("touchstart", handleStop, { passive: false });
 
     stopButton.classList.add("active");
 
@@ -236,45 +210,31 @@ function makeDrumLoopButtons(device, context) {
             button.classList.add("active");
         }
 
-        const handleLoopSelect = async () => {
-            try {
-                console.log(`Loop ${loop.value} button pressed, context state:`, context.state);
-                await context.resume();
-                console.log("Context resumed, new state:", context.state);
+        const handleLoopSelect = async (e) => {
+            if (e) e.preventDefault();
+            await context.resume();
+            device.node.context.transport.running = true;
+            loopSelectParam.value = loop.value;
 
-                // Start the transport
-                device.node.context.transport.running = true;
-                console.log("Transport running set to:", device.node.context.transport.running);
+            document.querySelectorAll(".loop-button").forEach(btn => {
+                btn.classList.remove("active");
+            });
+            button.classList.add("active");
 
-                loopSelectParam.value = loop.value;
-                console.log("Loop select parameter set to:", loop.value);
-                console.log("Current loop_select parameter value:", loopSelectParam.value);
+            if (window.updateLastLoopValue) {
+                window.updateLastLoopValue(loop.value);
+            }
 
-                document.querySelectorAll(".loop-button").forEach(btn => {
-                    btn.classList.remove("active");
-                });
-                button.classList.add("active");
-
-                if (window.updateLastLoopValue) {
-                    window.updateLastLoopValue(loop.value);
-                }
-
-                const playButton = document.getElementById("play-button");
-                const stopButton = document.getElementById("stop-button");
-                if (playButton && stopButton) {
-                    playButton.classList.add("active");
-                    stopButton.classList.remove("active");
-                }
-            } catch (err) {
-                console.error("Error in handleLoopSelect:", err);
+            const playButton = document.getElementById("play-button");
+            const stopButton = document.getElementById("stop-button");
+            if (playButton && stopButton) {
+                playButton.classList.add("active");
+                stopButton.classList.remove("active");
             }
         };
 
         button.addEventListener("click", handleLoopSelect);
-        button.addEventListener("touchend", (e) => {
-            e.preventDefault();
-            handleLoopSelect();
-        });
+        button.addEventListener("touchstart", handleLoopSelect, { passive: false });
 
         loopDiv.appendChild(button);
     });
